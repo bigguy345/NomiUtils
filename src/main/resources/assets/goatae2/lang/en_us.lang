@@ -1,0 +1,20 @@
+#PARSE_ESCAPES
+
+# Meta
+#itemGroup.goatae2=Goat AE2
+tile.goatae2:level_maintainer.name=ME Level Maintainer
+tile.goatae2:fluid_level_maintainer.name=ME Fluid Level Maintainer
+goatae2.gui.level_maintainer=ME Level Maintainer
+
+
+
+
+#Level maintainer GUI
+maintainer.stored=Stored: 
+maintainer.isCrafting=Crafting
+maintainer.craftFailed=Failed
+maintainer.failReason.missingIngredients=Missing ingredients
+maintainer.failReason.invalidPattern=Invalid pattern
+
+
+

@@ -1,0 +1,19 @@
+{
+  "package": "com.goat.goatae2.mixin",
+  "refmap": "mixins.goatae2.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "common.ae2.MixinContainerCraftingStatus",
+    "common.ae2.MixinCraftBranchFailure",
+    "common.ae2.MixinCraftingGridCache",
+    "common.ae2.MixinCraftingJob",
+    "common.ae2.MixinMultiMultiCraftingTracker"
+  ],
+  "client": [
+    "client.ae2.MixinAEBaseGui",
+    "client.ae2.MixinGuiCraftingStatus"
+  ],
+  "server": []
+}
