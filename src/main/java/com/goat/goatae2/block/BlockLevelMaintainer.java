@@ -1,7 +1,6 @@
 package com.goat.goatae2.block;
 
 import appeng.block.AEBaseTileBlock;
-import com.glodblock.github.common.tile.TileFluidLevelMaintainer;
 import com.goat.goatae2.GOATAE2;
 import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.tile.TileLevelMaintainer;
@@ -56,7 +55,7 @@ public class BlockLevelMaintainer extends AEBaseTileBlock {
     @Override
     public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
         TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if (tileEntity instanceof TileFluidLevelMaintainer) {
+        if (tileEntity instanceof TileLevelMaintainer) {
             //            if (((TileFluidLevelMaintainer) tileEntity).facing != null)
             //            {
             //                return state.withProperty(facingProperty,((TileFluidLevelMaintainer) tileEntity).facing);
@@ -69,7 +68,7 @@ public class BlockLevelMaintainer extends AEBaseTileBlock {
     public void onBlockPlacedBy(World w, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack is) {
         super.onBlockPlacedBy(w, pos, state, placer, is);
         TileEntity tileEntity = w.getTileEntity(pos);
-        if (tileEntity instanceof TileFluidLevelMaintainer) {
+        if (tileEntity instanceof TileLevelMaintainer) {
             // ((TileFluidLevelMaintainer) tileEntity).facing = placer.getHorizontalFacing().getOpposite();
         }
     }
@@ -78,7 +77,7 @@ public class BlockLevelMaintainer extends AEBaseTileBlock {
     public boolean rotateBlock(World w, BlockPos pos, EnumFacing axis) {
         //        FluidCraft.log.log(Level.INFO,axis.getOpposite());
         TileEntity tileEntity = w.getTileEntity(pos);
-        if (tileEntity instanceof TileFluidLevelMaintainer) {
+        if (tileEntity instanceof TileLevelMaintainer) {
             // EnumFacing facing = ((TileFluidLevelMaintainer) tileEntity).facing;
             //  ((TileFluidLevelMaintainer) tileEntity).facing = facing.rotateY();
             //  w.setBlockState(pos,this.blockState.getBaseState().withProperty(facingProperty,facing.rotateY()));

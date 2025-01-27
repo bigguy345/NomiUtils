@@ -26,13 +26,12 @@ import appeng.parts.automation.UpgradeInventory;
 import appeng.tile.grid.AENetworkTile;
 import appeng.util.ConfigManager;
 import appeng.util.IConfigManagerHost;
+import appeng.util.Platform;
 import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
 import appeng.util.item.AEItemStack;
-import com.glodblock.github.common.item.ItemFluidDrop;
-import com.glodblock.github.util.DummyInvAdaptor;
-
 import com.goat.goatae2.Utility;
+import com.goat.goatae2.util.DummyAdaptor;
 import com.google.common.collect.ImmutableSet;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -41,11 +40,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.UniversalBucket;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.IItemHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.goat.goatae2.GOATAE2.AE2FC_LOADED;
 
 public class TileLevelMaintainer extends AENetworkTile implements ICraftingRequester, ITickable, ITerminalHost, IConfigManagerHost, IUpgradeableHost, IAEAppEngInventory {
 
@@ -114,19 +116,11 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
                         //   System.out.println(inStock.getStackSize());
                         if (inStock == null || inStock.getStackSize() < threshold)
                             if (canInsert(itemMonitor, item.copy().setStackSize(batchSize))) {
-                                this.craftingTracker.handleCrafting(i, batchSize, item, DummyInvAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
-                                this.craftingTracker.handleCrafting(i, batchSize, item, DummyInvAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
+                                this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
+                                this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
                             }
-                    } else {
-                        IMEMonitor<IAEFluidStack> fluidMonitor = getFluidMonitor();
-                        IAEFluidStack afs = AEFluidStack.fromFluidStack(fluid);
-                        IAEFluidStack inStock = fluidMonitor.getStorageList().findPrecise(afs);
-                        if (inStock == null || inStock.getStackSize() < threshold) {
-                            if (canInsert(fluidMonitor, afs.copy().setStackSize(batchSize))) {
-                                this.craftingTracker.handleCrafting(i, batchSize, ItemFluidDrop.newAeStack(fluid), DummyInvAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
-                                this.craftingTracker.handleCrafting(i, batchSize,  item, DummyInvAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
-                            }
-                        }
+                    } else if (AE2FC_LOADED) {
+                        craftFluids(item, fluid, i, batchSize, threshold);
                     }
                 }
                 if (batchSize < 1 && config.craftFailed[i])
@@ -135,6 +129,19 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
             markForUpdate();
         } catch (GridAccessException e) {
             //Ignore
+        }
+    }
+
+    @Optional.Method(modid = "ae2fc")
+    private void craftFluids(IAEItemStack item, FluidStack fluid, int slotId, int batchSize, int threshold) throws GridAccessException {
+        IMEMonitor<IAEFluidStack> fluidMonitor = getFluidMonitor();
+        IAEFluidStack afs = AEFluidStack.fromFluidStack(fluid);
+        IAEFluidStack inStock = fluidMonitor.getStorageList().findPrecise(afs);
+        if (inStock == null || inStock.getStackSize() < threshold) {
+            if (canInsert(fluidMonitor, afs.copy().setStackSize(batchSize))) {
+                this.craftingTracker.handleCrafting(slotId, batchSize, Utility.asAeStack(fluid), DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
+                this.craftingTracker.handleCrafting(slotId, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
+            }
         }
     }
 
@@ -224,7 +231,7 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
             double power = (double) items.getStackSize() / 1000.0;
             if (energy != null && energy.extractAEPower(power, mode, PowerMultiplier.CONFIG) > power - 0.01) {
                 ItemStack inputStack = items.getCachedItemStack(items.getStackSize());
-                FluidStack fluid = ItemFluidDrop.getFluidStack(inputStack);
+                FluidStack fluid = Utility.getFcFluidStack(inputStack);
 
                 if (fluid == null) {
                     IMEMonitor<IAEItemStack> itemGrid = getItemMonitor();
@@ -266,12 +273,36 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
                     }
 
                     return ItemFluidDrop.newAeStack(remaining);
+                } else if (AE2FC_LOADED) {
+                    injectCraftedFluids(items, inputStack, fluid, mode);
                 }
             }
         }
 
 
         return items;
+    }
+
+    @Optional.Method(modid = "ae2fc")
+    private IAEItemStack injectCraftedFluids(IAEItemStack items, ItemStack inputStack, FluidStack fluid, Actionable mode) {
+        IMEMonitor<IAEFluidStack> fluidGrid = this.getFluidMonitor();
+        IAEFluidStack remaining;
+        if (mode == Actionable.SIMULATE) {
+            remaining = fluidGrid.injectItems(AEFluidStack.fromFluidStack(fluid), Actionable.SIMULATE, this.source);
+            items.setCachedItemStack(inputStack);
+        } else {
+            remaining = fluidGrid.injectItems(AEFluidStack.fromFluidStack(fluid), Actionable.MODULATE, this.source);
+            if (remaining == null || remaining.getStackSize() <= 0L) {
+                ItemStack tmp = Utility.asAeStack(remaining) != null ? Utility.asAeStack(remaining).getDefinition() : null;
+                items.setCachedItemStack(tmp);
+            }
+        }
+
+        if (Utility.asItemStack(remaining != null ? remaining.getFluidStack() : null) == inputStack) {
+            return items;
+        }
+
+        return Utility.asAeStack(remaining);
     }
 
     @Override
@@ -306,7 +337,6 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
     public <T extends IAEStack<T>> IMEMonitor<T> getInventory(IStorageChannel<T> iStorageChannel) {
         return null;
     }
-
 
     @Override
     public void updateSetting(IConfigManager iConfigManager, Enum anEnum, Enum anEnum1) {

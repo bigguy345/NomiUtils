@@ -1,5 +1,6 @@
 package com.goat.goatae2;
 
+import appeng.util.Platform;
 import com.goat.goatae2.network.PacketHandler;
 import com.goat.goatae2.proxy.CommonProxy;
 import net.minecraft.util.ResourceLocation;
@@ -24,12 +25,13 @@ public class GOATAE2 {
     public static GOATAE2 INSTANCE;
 
     public static final Logger LOGGER = LogManager.getLogger(MODID);
+    public static boolean AE2FC_LOADED;
 
     @SidedProxy(clientSide = "com.goat.goatae2.proxy.ClientProxy", serverSide = "com.goat.goatae2.proxy.CommonProxy")
     public static CommonProxy proxy;
 
     @Mod.EventHandler
-    public void preinit(FMLPreInitializationEvent preinit) {
+    public void preInit(FMLPreInitializationEvent preinit) {
         MinecraftForge.EVENT_BUS.register(this);
         proxy.preInit(preinit);
     }
@@ -42,8 +44,10 @@ public class GOATAE2 {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent event) {
         proxy.postInit(event);
-
+        
+        AE2FC_LOADED = Platform.isModLoaded("ae2fc");
         PacketHandler.Instance = new PacketHandler();
+
     }
 
     public static ResourceLocation resource(String path) {

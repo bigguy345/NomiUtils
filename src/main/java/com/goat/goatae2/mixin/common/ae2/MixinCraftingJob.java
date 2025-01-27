@@ -5,12 +5,17 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.crafting.CraftBranchFailure;
 import appeng.crafting.CraftingJob;
+import appeng.util.Platform;
+import com.glodblock.github.loader.FCItems;
+import com.goat.goatae2.Utility;
 import com.goat.goatae2.tile.ICraftBranchFailure;
 import com.goat.goatae2.tile.IMultiCraftingTracker;
 import com.goat.goatae2.tile.TileLevelMaintainer;
 import com.google.common.base.Stopwatch;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.common.Optional;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,6 +27,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import static com.goat.goatae2.GOATAE2.AE2FC_LOADED;
 
 @Mixin(value = CraftingJob.class, remap = false)
 public class MixinCraftingJob {
@@ -68,7 +75,6 @@ public class MixinCraftingJob {
                     } else if (type.contains("failed")) {
                         tile.config.craftFailed[id] = true;
                         tile.config.failReason[id] = getFailReason(pair.getValue(), e);
-
                     }
                     it.remove(); //success and failed jobs are only removed here
                 }
@@ -83,7 +89,12 @@ public class MixinCraftingJob {
         IAEItemStack failedItem = ((ICraftBranchFailure) ex).getItem();
         IAEItemStack expectedItem = job.getOutput();
         boolean itemsEqual = expectedItem.getItem() == failedItem.getItem();
-        
+
+        if (AE2FC_LOADED && isFluidDrops(failedItem)) {
+            return getLiquidFailReason(failedItem, expectedItem);
+        }
+
+
         if (itemsEqual && expectedItem.getStackSize() == failedItem.getStackSize())
             return "maintainer.failReason.invalidPattern";
 
@@ -91,6 +102,28 @@ public class MixinCraftingJob {
             return "maintainer.failReason.missingIngredients";
 
         return null;
+    }
+
+    @Unique
+    @Optional.Method(modid = "ae2fc")
+    private String getLiquidFailReason(IAEItemStack failedItem, IAEItemStack expectedItem) {
+        FluidStack failed = Utility.getFcFluidStack(failedItem.getDefinition());
+        FluidStack expected = Utility.getFcFluidStack(expectedItem.getDefinition());
+
+        boolean fluidsEqual = failed.equals(expected);
+
+        if (fluidsEqual && expectedItem.getStackSize() == failedItem.getStackSize())
+            return "maintainer.failReason.invalidPattern";
+
+        if (!fluidsEqual)
+            return "maintainer.failReason.missingIngredients";
+        return null;
+    }
+
+    @Unique
+    @Optional.Method(modid = "ae2fc")
+    private boolean isFluidDrops(IAEItemStack item) {
+        return item.getItem() == FCItems.FLUID_DROP;
     }
 
     @Shadow

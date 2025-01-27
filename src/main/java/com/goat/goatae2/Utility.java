@@ -14,6 +14,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.UniversalBucket;
+import net.minecraftforge.fml.common.Optional;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -22,7 +23,6 @@ public class Utility {
 
     public static FluidStack dummy2fluid(ItemStack stack) {
         if (!stack.isEmpty() && stack.hasTagCompound()) {
-            NBTTagCompound cmpd = stack.getTagCompound();
             FluidStack fluid = FluidStack.loadFluidStackFromNBT(Objects.requireNonNull(stack.getTagCompound()));
             return fluid != null && fluid.amount > 0 ? fluid : null;
         } else {
@@ -47,8 +47,8 @@ public class Utility {
         return AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class);
     }
 
-    public static FluidStack getFluidStack(ItemStack stack) {
-        if (!stack.isEmpty() && stack.getItem() == FCItems.FLUID_DROP && stack.hasTagCompound()) {
+    public static FluidStack getFcFluidStack(ItemStack stack) {
+        if (!stack.isEmpty() && stack.hasTagCompound()) {
             NBTTagCompound tag = Objects.requireNonNull(stack.getTagCompound());
             if (!tag.hasKey("Fluid", 8)) {
                 return null;
@@ -70,9 +70,11 @@ public class Utility {
         }
     }
 
-    public static ItemStack newStack(@Nullable FluidStack fluid) {
+    @Optional.Method(modid = "ae2fc")
+    public static ItemStack asItemStack(@Nullable FluidStack fluid) {
         if (fluid != null && fluid.amount > 0) {
             ItemStack stack = new ItemStack(FCItems.FLUID_DROP, fluid.amount);
+
             NBTTagCompound tag = new NBTTagCompound();
             tag.setString("Fluid", fluid.getFluid().getName());
             if (fluid.tag != null) {
@@ -86,9 +88,10 @@ public class Utility {
         }
     }
 
-    public static IAEItemStack asAEStack(@Nullable IAEFluidStack fluid) {
+    @Optional.Method(modid = "ae2fc")
+    public static IAEItemStack asAeStack(@Nullable IAEFluidStack fluid) {
         if (fluid != null && fluid.getStackSize() > 0L) {
-            IAEItemStack stack = AEItemStack.fromItemStack(newStack(fluid.getFluidStack()));
+            IAEItemStack stack = AEItemStack.fromItemStack(asItemStack(fluid.getFluidStack()));
             if (stack == null) {
                 return null;
             } else {
@@ -100,13 +103,14 @@ public class Utility {
         }
     }
 
-    public static IAEItemStack asAEStack(@Nullable FluidStack fluid) {
+    @Optional.Method(modid = "ae2fc")
+    public static IAEItemStack asAeStack(@Nullable FluidStack fluid) {
         if (fluid != null && fluid.amount > 0) {
-            IAEItemStack stack = AEItemStack.fromItemStack(newStack(fluid));
+            IAEItemStack stack = AEItemStack.fromItemStack(asItemStack(fluid));
             if (stack == null) {
                 return null;
             } else {
-                stack.setStackSize((long) fluid.amount);
+                stack.setStackSize(fluid.amount);
                 return stack;
             }
         } else {
