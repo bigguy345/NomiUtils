@@ -4,7 +4,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.render.StackSizeRenderer;
 import com.goat.goatae2.RenderUtil;
-import com.goat.goatae2.client.gui.GuiLevelMaintainer;
+import com.goat.goatae2.client.gui.impl.GuiLevelMaintainer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;

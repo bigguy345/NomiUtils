@@ -2,6 +2,7 @@ package com.goat.goatae2.client.gui;
 
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
+import com.goat.goatae2.client.gui.impl.GuiLevelMaintainer;
 import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.container.ContainerLevelMaintainer;
 import com.goat.goatae2.tile.TileLevelMaintainer;

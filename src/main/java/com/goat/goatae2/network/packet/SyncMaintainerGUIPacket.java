@@ -1,6 +1,6 @@
 package com.goat.goatae2.network.packet;
 
-import com.goat.goatae2.client.gui.GuiLevelMaintainer;
+import com.goat.goatae2.client.gui.impl.GuiLevelMaintainer;
 import com.goat.goatae2.network.AbstractPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;

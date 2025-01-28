@@ -1,4 +1,4 @@
-package com.goat.goatae2.client.gui;
+package com.goat.goatae2.client.gui.impl;
 
 import appeng.api.config.ActionItems;
 import appeng.api.config.FuzzyMode;
@@ -53,6 +53,7 @@ import org.lwjgl.opengl.GL11;
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 
@@ -115,14 +116,15 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
         Slot slot = null;
 
         if (this.mc.player.inventory.getItemStack().isEmpty() && (slot = this.getSlotUnderMouse()) != null && slot.getHasStack() && slot instanceof SlotFake) {
+            List<String> tooltip = getItemToolTip(slot.getStack());
             int id = slot.slotNumber;
             ItemMaintainerInventory inv = cont.getTile().config;
             IAEItemStack slotItem = inv.items[id];
+            
             long stackSize = !inv.inSystemStock[id] ? 0 : slotItem.getStackSize();
+            String formattedStackSize = NumberFormat.getInstance().format(stackSize);
             boolean isFluid = Utility.isFluid(slotItem);
-
-            List<String> tooltip = getItemToolTip(slot.getStack());
-            tooltip.add(TextFormatting.GRAY + localize("maintainer.stored") + stackSize + (isFluid ? " mB" : ""));
+            tooltip.add(TextFormatting.GRAY + localize("maintainer.stored") + formattedStackSize + (isFluid ? " mB" : ""));
 
             if (inv.isCrafting[id])
                 tooltip.add(TextFormatting.GREEN + localize("maintainer.isCrafting"));
