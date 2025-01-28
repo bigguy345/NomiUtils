@@ -65,7 +65,7 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
     public boolean isOpened;
     private final IConfigManager manager;
-    
+
     public int tempClickedSlot = -1; //temporarily saves GuiLevelMaintainer selected slot for GuiCraftConfirm
 
     public void addListener(EntityPlayer player) {
@@ -124,7 +124,7 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
                         craftFluids(item, fluid, i, batchSize, threshold);
                     }
                 }
-                if (batchSize < 1 && config.craftFailed[i])
+                if ((batchSize < 1 || item != null && threshold < item.getStackSize()) && config.craftFailed[i])
                     config.craftFailed[i] = false;
             }
             markForUpdate();

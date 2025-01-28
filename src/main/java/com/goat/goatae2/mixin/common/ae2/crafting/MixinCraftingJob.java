@@ -5,7 +5,6 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.crafting.CraftBranchFailure;
 import appeng.crafting.CraftingJob;
-import appeng.util.Platform;
 import com.glodblock.github.loader.FCItems;
 import com.goat.goatae2.Utility;
 import com.goat.goatae2.tile.ICraftBranchFailure;
@@ -55,7 +54,7 @@ public class MixinCraftingJob {
 
     @Unique
     public void logCrafting(String type, CraftBranchFailure e) {
-        if (actionSrc.machine().get() instanceof TileLevelMaintainer) {
+        if (actionSrc.machine().get() instanceof TileLevelMaintainer && !actionSrc.player().isPresent()) {
             CraftingJob thi = (CraftingJob) (Object) this;
 
             TileLevelMaintainer tile = (TileLevelMaintainer) actionSrc.machine().get();
