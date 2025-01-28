@@ -1,4 +1,4 @@
-package com.goat.goatae2.mixin.client.ae2;
+package com.goat.goatae2.mixin.client.ae2.gui;
 
 import appeng.client.gui.implementations.GuiCraftingStatus;
 import appeng.client.gui.widgets.GuiTabButton;
@@ -39,7 +39,7 @@ public class MixinGuiCraftingStatus {
     @Inject(method = "actionPerformed", at = @At(value = "INVOKE", target = "Lappeng/client/gui/implementations/GuiCraftingCPU;actionPerformed(Lnet/minecraft/client/gui/GuiButton;)V", shift = At.Shift.AFTER), remap = true, cancellable = true)
     protected void actionPerformed(GuiButton btn, CallbackInfo ci) {
         if (btn == this.originalGuiBtn && this.status.getTarget() instanceof TileLevelMaintainer) {
-            PacketHandler.Instance.sendToServer(new OpenCraftingGUI(2));
+            PacketHandler.Instance.sendToServer(new OpenCraftingGUI(OpenCraftingGUI.Type.LEVEL_MAINTAINER, null));
             ci.cancel();
         }
     }

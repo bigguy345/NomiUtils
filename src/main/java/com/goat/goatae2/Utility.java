@@ -1,11 +1,13 @@
 package com.goat.goatae2;
 
 import appeng.api.AEApi;
+import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.IStorageChannel;
 import appeng.api.storage.channels.IFluidStorageChannel;
 import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
 import appeng.util.item.AEItemStack;
 import com.glodblock.github.loader.FCItems;
 import net.minecraft.item.ItemStack;
@@ -15,11 +17,39 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.UniversalBucket;
 import net.minecraftforge.fml.common.Optional;
+import org.spongepowered.asm.mixin.Unique;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static com.goat.goatae2.GOATAE2.AE2FC_LOADED;
+
 public class Utility {
+
+    public static  <T extends IAEStack<T>> boolean isCraftable(IMEMonitor<T> monitor, T stack) {
+        T inStock = monitor.getStorageList().findPrecise(stack);
+        return inStock != null && inStock.isCraftable();
+    }
+
+    public static boolean isFluidCraftable(IMEMonitor<IAEItemStack> monitor, FluidStack fluid) {
+        return isCraftable(monitor, getCorrectCraftingFluid(fluid));
+    }
+
+    @Unique
+    public static IAEItemStack getCorrectCraftingItem(IAEItemStack item) {
+        FluidStack fluid = Utility.dummy2fluid(item);
+        if (fluid == null || item.getDefinition().getItem() instanceof UniversalBucket) {
+            return item;
+        } else if (AE2FC_LOADED) {
+            return getCorrectCraftingFluid(fluid);
+        }
+        return item;
+    }
+
+    @Optional.Method(modid = "ae2fc")
+    public static IAEItemStack getCorrectCraftingFluid(FluidStack fluid) {
+        return Utility.asAeStack(fluid);
+    }
 
     public static FluidStack dummy2fluid(ItemStack stack) {
         if (!stack.isEmpty() && stack.hasTagCompound()) {

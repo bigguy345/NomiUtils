@@ -1,4 +1,4 @@
-package com.goat.goatae2.mixin.common.ae2;
+package com.goat.goatae2.mixin.common.ae2.crafting;
 
 import appeng.api.storage.data.IAEItemStack;
 import appeng.crafting.CraftBranchFailure;

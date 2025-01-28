@@ -83,9 +83,9 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
                 ItemMaintainerInventory inv = tile.config;
                 inv.setThreshold(slotId, 0);
                 inv.setBatchSize(slotId, 0);
-                inv.inSystemStock[slotId] = inv.isCrafting[slotId] = inv.craftFailed[slotId] = false;
+                inv.inSystemStock[slotId] = inv.isCraftable[slotId] = inv.isCrafting[slotId] = inv.craftFailed[slotId] = false;
                 inv.failReason[slotId] = null;
-                
+
                 PacketHandler.Instance.sendToPlayer(new SyncMaintainerGUIPacket(slotId, 0, SyncMaintainerGUIPacket.Type.CLEAR_SLOT), player);
             }
         }
@@ -105,7 +105,7 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
             if (getSlot(x) != null && !getSlot(x).getStack().isEmpty()) {
                 inv.setStackInSlot(x, ItemStack.EMPTY);
                 inv.thresholds[x] = inv.batchSizes[x] = 0;
-                inv.inSystemStock[x] = inv.isCrafting[x] = inv.craftFailed[x] = false;
+                inv.inSystemStock[x] = inv.isCraftable[x] = inv.isCrafting[x] = inv.craftFailed[x] = false;
                 inv.failReason[x] = null;
             }
         }
@@ -139,7 +139,7 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
     @Override
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
-//        tile.doCraftCycle();
+        //        tile.doCraftCycle();
         tile.removeListener(player);
     }
 }

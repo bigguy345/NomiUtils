@@ -28,6 +28,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
     public int[] thresholds;
     public int[] batchSizes;
     public boolean[] inSystemStock;
+    public boolean[] isCraftable;
     public boolean[] isCrafting;
     public boolean[] craftFailed;
     public String[] failReason;
@@ -39,6 +40,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
         this.thresholds = new int[s];
         this.batchSizes = new int[s];
         this.inSystemStock = new boolean[s];
+        isCraftable = new boolean[s];
         isCrafting = new boolean[s];
         craftFailed = new boolean[s];
         failReason = new String[s];
@@ -99,7 +101,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
         for (int i = 0; i < items.length; i++) {
             IAEItemStack item = items[i];
             if (item != null) {
-                long stockNumber = getSystemStackSize(item, proxyActive);
+                long stockNumber = getSystemStackSize(i, item, proxyActive);
                 item.setStackSize(stockNumber == 0 ? 1 : stockNumber);
                 inSystemStock[i] = stockNumber > 0;
             }
@@ -107,7 +109,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
         owner.markForUpdate();
     }
 
-    private long getSystemStackSize(IAEItemStack item, boolean proxyActive) {
+    private long getSystemStackSize(int slotId, IAEItemStack item, boolean proxyActive) {
         if (!proxyActive)
             return 0;
 
@@ -117,16 +119,21 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
             if (owner.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
                 FuzzyMode fzMode = (FuzzyMode) owner.getConfigManager().getSetting(Settings.FUZZY_MODE);
                 for (IAEItemStack inStock : owner.getItemMonitor().getStorageList().findFuzzy(AEItemStack.fromItemStack(item.getDefinition()), fzMode)) {
-                    if (inStock != null)
+                    if (inStock != null) {
+                        isCraftable[slotId] = inStock.isCraftable();
                         stockNumber += inStock.getStackSize();
+                    }
                 }
             } else {
                 IAEItemStack inStock = owner.getItemMonitor().getStorageList().findPrecise(AEItemStack.fromItemStack(item.getDefinition()));
-                if (inStock != null)
+                if (inStock != null) {
+                    isCraftable[slotId] = inStock.isCraftable();
                     stockNumber += inStock.getStackSize();
+                }
             }
         } else {
             IAEFluidStack inStock = owner.getFluidMonitor().getStorageList().findPrecise(AEFluidStack.fromFluidStack(fluid));
+            isCraftable[slotId] = Utility.isFluidCraftable(owner.getItemMonitor(), fluid);
             if (inStock != null)
                 stockNumber = inStock.getStackSize();
         }
@@ -136,8 +143,9 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
     public void setStackInSlot(int slot, ItemStack newItemStack) {
         IAEItemStack item = AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createStack(newItemStack);
         items[slot] = item;
+        item.setCraftable(isCraftable[slot]);
         if (Platform.isServer() && item != null && !item.getDefinition().isEmpty()) {
-            long stockNumber = getSystemStackSize(item, owner.getProxy().isActive());
+            long stockNumber = getSystemStackSize(slot, item, owner.getProxy().isActive());
             item.setStackSize(stockNumber == 0 ? 1 : stockNumber);
             inSystemStock[slot] = stockNumber > 0;
 
@@ -157,6 +165,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
                     c.setInteger("threshold", thresholds[x]);
                     c.setInteger("batchSize", batchSizes[x]);
                     c.setBoolean("inStock", inSystemStock[x]);
+                    c.setBoolean("isCraftable", isCraftable[x]);
                     c.setBoolean("isCrafting", isCrafting[x]);
                     c.setBoolean("craftFailed", craftFailed[x]);
                     if (failReason[x] != null)
@@ -180,6 +189,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
                     thresholds[x] = c.getInteger("threshold");
                     batchSizes[x] = c.getInteger("batchSize");
                     inSystemStock[x] = c.getBoolean("inStock");
+                    isCraftable[x] = c.getBoolean("isCraftable");
                     isCrafting[x] = c.getBoolean("isCrafting");
                     craftFailed[x] = c.getBoolean("craftFailed");
                     failReason[x] = c.hasKey("failReason") ? c.getString("failReason") : null;
@@ -198,6 +208,7 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
                 data.writeInt(thresholds[x]);
                 data.writeInt(batchSizes[x]);
                 data.writeBoolean(inSystemStock[x]);
+                data.writeBoolean(isCraftable[x]);
                 data.writeBoolean(isCrafting[x]);
                 data.writeBoolean(craftFailed[x]);
                 data.writeBoolean(failReason[x] == null);
@@ -218,6 +229,8 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
             thresholds[order] = data.readInt();
             batchSizes[order] = data.readInt();
             inSystemStock[order] = data.readBoolean();
+            isCraftable[order] = data.readBoolean();
+            items[order].setCraftable(isCraftable[order]);
             isCrafting[order] = data.readBoolean();
             craftFailed[order] = data.readBoolean();
             boolean failReasonNull = data.readBoolean();

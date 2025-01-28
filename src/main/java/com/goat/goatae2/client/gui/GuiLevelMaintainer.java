@@ -9,7 +9,6 @@ import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.GuiImgButton;
 import appeng.client.gui.widgets.GuiNumberBox;
 import appeng.client.gui.widgets.GuiTabButton;
-import appeng.client.render.StackSizeRenderer;
 import appeng.container.interfaces.IJEIGhostIngredients;
 import appeng.container.slot.IJEITargetSlot;
 import appeng.container.slot.SlotFake;
@@ -42,6 +41,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
@@ -60,10 +60,10 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
 
     protected final Map<IGhostIngredientHandler.Target<?>, Object> mapTargetSlot = new HashMap<>();
     private final ContainerLevelMaintainer cont;
+    public TileLevelMaintainer tile;
     private Slot selectedSlot;
-    private final StackSizeRenderer stackSizeRenderer = new StackSizeRenderer();
     private GuiTabButton craftingStatus;
-    private GuiImgButton clear, fluidClear, fuzzyMode;
+    private GuiImgButton clear, fuzzyMode;
     private GuiImgButtonGAE2 run;
 
     private GuiNumberBox threshold, batchSize;
@@ -72,8 +72,15 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
     public GuiLevelMaintainer(InventoryPlayer ipl, TileLevelMaintainer tile) {
         super(new ContainerLevelMaintainer(ipl, tile));
         this.cont = (ContainerLevelMaintainer) inventorySlots;
+        this.tile = tile;
         this.xSize = 246;
         this.ySize = 251;
+
+        for (int x = 0; x < tile.config.size; ++x) {
+            if (tile.config.items[x] != null) {
+                tile.config.items[x].setCraftable(tile.config.isCraftable[x]);
+            }
+        }
     }
 
     @Override
@@ -316,14 +323,27 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             super.handleMouseClick(slot, slotIdx, mouseButton, clickType);
             return;
         } else if (slot instanceof SlotFake || slot instanceof FluidSlot) {
-            selectedSlot = slot;
+
             ItemStack slotItem = slot.getStack();
             boolean empty = slotItem.isEmpty();
-            boolean handEmpty = mc.player.inventory.getItemStack().isEmpty();
 
+            int id = slot.slotNumber;
+            if (this.mc.gameSettings.keyBindPickBlock.isActiveAndMatches(mouseButton - 100) || isAltKeyDown() && mouseButton == 0) {
+                if (!empty && tile.config.isCraftable[id]) {
+                    NBTTagCompound compound = new NBTTagCompound();
+                    tile.config.items[id].writeToNBT(compound);
+                    compound.setInteger("slotId", tile.tempClickedSlot = id);
+                    PacketHandler.Instance.sendToServer(new OpenCraftingGUI(OpenCraftingGUI.Type.CRAFTING_AMOUNT, compound));
+                }
+                return;
+            }
+
+            selectedSlot = slot;
             setEnabled(threshold, !empty);
             setEnabled(batchSize, !empty);
 
+
+            boolean handEmpty = mc.player.inventory.getItemStack().isEmpty();
             InventoryAction action = null;
             if (mouseButton == 0 && (empty || !handEmpty) || mouseButton == 1 && !empty)
                 action = InventoryAction.PICKUP_OR_SET_DOWN;
@@ -412,13 +432,13 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
         } else if (type == SyncMaintainerGUIPacket.Type.CLEAR_SLOT) {
             ItemMaintainerInventory inv = cont.getTile().config;
             inv.thresholds[id] = inv.batchSizes[id] = 0;
-            inv.inSystemStock[id] = inv.isCrafting[id] = inv.craftFailed[id] = false;
+            inv.inSystemStock[id] = inv.isCraftable[id] = inv.isCrafting[id] = inv.craftFailed[id] = false;
             inv.failReason[id] = null;
         } else if (type == SyncMaintainerGUIPacket.Type.CLEAR_ALL_SLOTS) {
             ItemMaintainerInventory inv = cont.getTile().config;
             for (int x = 0; x < inv.size; ++x) {
                 inv.thresholds[x] = inv.batchSizes[x] = 0;
-                inv.inSystemStock[x] = inv.isCrafting[x] = inv.craftFailed[x] = false;
+                inv.inSystemStock[x] = inv.isCraftable[id] = inv.isCrafting[x] = inv.craftFailed[x] = false;
                 inv.failReason[x] = null;
             }
         }
@@ -477,7 +497,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
 
 
         if (btn == this.craftingStatus)
-            PacketHandler.Instance.sendToServer(new OpenCraftingGUI(1));
+            PacketHandler.Instance.sendToServer(new OpenCraftingGUI(OpenCraftingGUI.Type.CRAFTING_STATUS, null));
 
         if (btn == this.run)
             PacketHandler.Instance.sendToServer(new UpdateMaintainerPacket(0, 0, UpdateMaintainerPacket.Type.RUN));

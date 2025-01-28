@@ -1,4 +1,4 @@
-package com.goat.goatae2.mixin.common.ae2;
+package com.goat.goatae2.mixin.common.ae2.crafting;
 
 import appeng.api.networking.crafting.ICraftingJob;
 import appeng.api.networking.security.IActionSource;

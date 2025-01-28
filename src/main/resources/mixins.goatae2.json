@@ -5,15 +5,19 @@
   "minVersion": "0.8.5",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "common.ae2.MixinContainerCraftingStatus",
-    "common.ae2.MixinCraftBranchFailure",
-    "common.ae2.MixinCraftingGridCache",
-    "common.ae2.MixinCraftingJob",
-    "common.ae2.MixinMultiMultiCraftingTracker"
+    "common.ae2.container.MixinContainerCraftAmount",
+    "common.ae2.container.MixinContainerCraftConfirm",
+    "common.ae2.container.MixinContainerCraftingStatus",
+    "common.ae2.crafting.MixinCraftBranchFailure",
+    "common.ae2.crafting.MixinCraftingGridCache",
+    "common.ae2.crafting.MixinCraftingJob",
+    "common.ae2.crafting.MixinMultiMultiCraftingTracker"
   ],
   "client": [
-    "client.ae2.MixinAEBaseGui",
-    "client.ae2.MixinGuiCraftingStatus"
+    "client.ae2.gui.MixinAEBaseGui",
+    "client.ae2.gui.MixinGuiCraftAmount",
+    "client.ae2.gui.MixinGuiCraftConfirm",
+    "client.ae2.gui.MixinGuiCraftingStatus"
   ],
   "server": []
 }

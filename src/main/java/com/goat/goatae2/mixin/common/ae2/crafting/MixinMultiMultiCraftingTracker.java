@@ -1,4 +1,4 @@
-package com.goat.goatae2.mixin.common.ae2;
+package com.goat.goatae2.mixin.common.ae2.crafting;
 
 import appeng.api.networking.IGrid;
 import appeng.api.networking.crafting.ICraftingGrid;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.concurrent.Future;
 
 @Mixin(value = MultiCraftingTracker.class, remap = false)
-public class MixinMultiMultiCraftingTracker implements IMultiCraftingTracker {
+public abstract class MixinMultiMultiCraftingTracker implements IMultiCraftingTracker {
 
     @Shadow
     private Future<ICraftingJob>[] jobs;
@@ -61,9 +61,28 @@ public class MixinMultiMultiCraftingTracker implements IMultiCraftingTracker {
         return lastSlot;
     }
 
+    @Override
+    public void setJobP(int slot, Future<ICraftingJob> l) {
+        this.setJob(slot, l);
+    }
+    @Override
+    public void setLinkP(int slot, ICraftingLink l) {
+        this.setLink(slot, l);
+    }
+
     @Shadow
     int getSlot(ICraftingLink link) {
         return 0;
+    }
+
+    @Shadow
+    private void setJob(int slot, Future<ICraftingJob> l) {
+
+    }
+
+    @Shadow
+    private void setLink(int slot, ICraftingLink l) {
+        
     }
 
     @Override
@@ -80,16 +99,10 @@ public class MixinMultiMultiCraftingTracker implements IMultiCraftingTracker {
     private void captureJobs(int slot, Future<ICraftingJob> l, CallbackInfo ci) {
         if (l != null) {
             try {
-                ICraftingJob job = l.get();
                 jobsMap.put(slot, l.get());
             } catch (Exception e) {
             }
         }
     }
-
-    @Inject(method = "setLink", at = @At("HEAD"))
-    private void removeCapturedJob(int slot, ICraftingLink l, CallbackInfo ci) {
-      //  if (l == null)
-            jobsMap.remove(slot);
-    }
+    
 }

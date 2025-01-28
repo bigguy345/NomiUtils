@@ -16,5 +16,10 @@ public interface IMultiCraftingTracker {
 
     int getLastSlot();
     
+
+    void setJobP(int slot, Future<ICraftingJob> l);
+
+    void setLinkP(int slot, ICraftingLink l);
+
     int getLinkSlot(ICraftingLink link);
 }

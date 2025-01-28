@@ -1,6 +1,8 @@
-package com.goat.goatae2.mixin.common.ae2;
+package com.goat.goatae2.mixin.common.ae2.container;
 
 import appeng.api.storage.ITerminalHost;
+import appeng.container.AEBaseContainer;
+import appeng.container.implementations.ContainerCraftAmount;
 import appeng.container.implementations.ContainerCraftingCPU;
 import appeng.container.implementations.ContainerCraftingStatus;
 import com.goat.goatae2.tile.TileLevelMaintainer;
@@ -12,10 +14,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = ContainerCraftingStatus.class, remap = false)
-public class MixinContainerCraftingStatus extends ContainerCraftingCPU {
+@Mixin(value = ContainerCraftAmount.class, remap = false)
+public class MixinContainerCraftAmount extends AEBaseContainer {
 
-    public MixinContainerCraftingStatus(InventoryPlayer ip, Object te) {
+    public MixinContainerCraftAmount(InventoryPlayer ip, Object te) {
         super(ip, te);
     }
 

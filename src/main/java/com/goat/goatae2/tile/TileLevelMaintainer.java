@@ -26,7 +26,6 @@ import appeng.parts.automation.UpgradeInventory;
 import appeng.tile.grid.AENetworkTile;
 import appeng.util.ConfigManager;
 import appeng.util.IConfigManagerHost;
-import appeng.util.Platform;
 import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
 import appeng.util.item.AEItemStack;
@@ -53,7 +52,7 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
     public int tick;
     public final ItemMaintainerInventory config = new ItemMaintainerInventory(this, 9 * 6);
-    private final IActionSource source;
+    public final IActionSource source;
 
     public final MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, config.size);
     public final UpgradeInventory upgrades;
@@ -66,6 +65,8 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
     public boolean isOpened;
     private final IConfigManager manager;
+    
+    public int tempClickedSlot = -1; //temporarily saves GuiLevelMaintainer selected slot for GuiCraftConfirm
 
     public void addListener(EntityPlayer player) {
         playersMonitored.add(player);
@@ -253,26 +254,6 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
                         return remaining;
                     }
-                } else {
-                    IMEMonitor<IAEFluidStack> fluidGrid = this.getFluidMonitor();
-                    FluidStack inputFluid = ItemFluidDrop.getFluidStack(inputStack);
-                    IAEFluidStack remaining;
-                    if (mode == Actionable.SIMULATE) {
-                        remaining = fluidGrid.injectItems(AEFluidStack.fromFluidStack(inputFluid), Actionable.SIMULATE, this.source);
-                        items.setCachedItemStack(inputStack);
-                    } else {
-                        remaining = fluidGrid.injectItems(AEFluidStack.fromFluidStack(inputFluid), Actionable.MODULATE, this.source);
-                        if (remaining == null || remaining.getStackSize() <= 0L) {
-                            ItemStack tmp = ItemFluidDrop.newAeStack(remaining) != null ? ItemFluidDrop.newAeStack(remaining).getDefinition() : null;
-                            items.setCachedItemStack(tmp);
-                        }
-                    }
-
-                    if (ItemFluidDrop.newStack(remaining != null ? remaining.getFluidStack() : null) == inputStack) {
-                        return items;
-                    }
-
-                    return ItemFluidDrop.newAeStack(remaining);
                 } else if (AE2FC_LOADED) {
                     injectCraftedFluids(items, inputStack, fluid, mode);
                 }
@@ -309,8 +290,8 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
     public void update() {
         if (!getWorld().isRemote) {
 
-            if (tick % (20 * 2) == 0 && !isOpened)
-                doCraftCycle();
+            // if (tick % (20 * 2) == 0 && !isOpened)
+            //  doCraftCycle();
             tick++;
         }
     }
