@@ -120,7 +120,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             int id = slot.slotNumber;
             ItemMaintainerInventory inv = cont.getTile().config;
             IAEItemStack slotItem = inv.items[id];
-            
+
             long stackSize = !inv.inSystemStock[id] ? 0 : slotItem.getStackSize();
             String formattedStackSize = NumberFormat.getInstance().format(stackSize);
             boolean isFluid = Utility.isFluid(slotItem);
@@ -227,7 +227,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             super.drawSlot(slot);
 
         boolean craftFailed = tile.config.craftFailed[slot.slotNumber];
-        boolean selected = slot.slotNumber == selectedSlot.slotNumber;
+        boolean selected = selectedSlot != null ? slot.slotNumber == selectedSlot.slotNumber : false;
         if (craftFailed || selected) { //draw outline
             int x = slot.xPos, y = slot.yPos;
             int width = 16, height = 16;
