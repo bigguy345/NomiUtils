@@ -73,7 +73,7 @@ public abstract class MixinContainerCraftConfirm extends AEBaseContainer {
     @Shadow
     public abstract World getWorld();
 
-    @Inject(method = "startJob", at = @At("HEAD"))
+    @Inject(method = "startJob", at = @At("HEAD"),cancellable = true)
     public void onStartJob(CallbackInfo ci) {
         if (getTarget() instanceof TileLevelMaintainer) {
             TileLevelMaintainer tile = (TileLevelMaintainer) getTarget();
@@ -98,6 +98,7 @@ public abstract class MixinContainerCraftConfirm extends AEBaseContainer {
                     p.openGui(GOATAE2.INSTANCE, GuiTypes.LEVEL_MAINTAINER_ID, p.getEntityWorld(), pos.getX(), pos.getY(), pos.getZ());
                 }
             }
+            ci.cancel();
         }
     }
 
