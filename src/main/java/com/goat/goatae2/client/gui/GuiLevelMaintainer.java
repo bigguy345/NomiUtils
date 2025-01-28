@@ -61,7 +61,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
     protected final Map<IGhostIngredientHandler.Target<?>, Object> mapTargetSlot = new HashMap<>();
     private final ContainerLevelMaintainer cont;
     public TileLevelMaintainer tile;
-    private Slot selectedSlot;
+    private static Slot selectedSlot;
     private GuiTabButton craftingStatus;
     private GuiImgButton clear, fuzzyMode;
     private GuiImgButtonGAE2 run;
@@ -99,14 +99,14 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
         this.threshold.setMaxStringLength(10);
         this.threshold.setTextColor(0xFFFFFF);
         this.threshold.setVisible(true);
-        setEnabled(threshold, selectedSlot != null);
-
 
         this.batchSize = new GuiNumberBox(this.fontRenderer, this.guiLeft + 184, this.guiTop + 52, 62, this.fontRenderer.FONT_HEIGHT, Long.class);
         this.batchSize.setEnableBackgroundDrawing(false);
         this.batchSize.setMaxStringLength(10);
         this.batchSize.setTextColor(0xFFFFFF);
         this.batchSize.setVisible(true);
+
+        setEnabled(threshold, selectedSlot != null);
         setEnabled(batchSize, selectedSlot != null);
     }
 
@@ -225,7 +225,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             super.drawSlot(slot);
 
         boolean craftFailed = tile.config.craftFailed[slot.slotNumber];
-        boolean selected = slot.equals(selectedSlot);
+        boolean selected = slot.slotNumber == selectedSlot.slotNumber;
         if (craftFailed || selected) { //draw outline
             int x = slot.xPos, y = slot.yPos;
             int width = 16, height = 16;
@@ -328,8 +328,9 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             boolean empty = slotItem.isEmpty();
 
             int id = slot.slotNumber;
-            if (this.mc.gameSettings.keyBindPickBlock.isActiveAndMatches(mouseButton - 100) || isAltKeyDown() && mouseButton == 0) {
-                if (!empty && tile.config.isCraftable[id]) {
+            boolean instaCraft = isShiftKeyDown() && !tile.config.isCrafting[id];
+            if (this.mc.gameSettings.keyBindPickBlock.isActiveAndMatches(mouseButton - 100) || (isAltKeyDown() || instaCraft) && mouseButton == 0) {
+                if (!empty && tile.config.isCraftable[id] && tile.config.batchSizes[id] > 0) {
                     NBTTagCompound compound = new NBTTagCompound();
                     tile.config.items[id].writeToNBT(compound);
                     compound.setInteger("slotId", tile.tempClickedSlot = id);

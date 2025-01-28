@@ -1,7 +1,9 @@
 package com.goat.goatae2.mixin.client.ae2.gui;
 
+import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.render.StackSizeRenderer;
+import com.goat.goatae2.RenderUtil;
 import com.goat.goatae2.client.gui.GuiLevelMaintainer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.ClickType;
@@ -30,7 +32,12 @@ public abstract class MixinAEBaseGui extends GuiScreen {
     private void onRenderingStackSize(Slot s, CallbackInfo ci) {
         if ((AEBaseGui) (Object) (this) instanceof GuiLevelMaintainer) {
             GuiLevelMaintainer gui = (GuiLevelMaintainer) (Object) (this);
-            stackSizeRenderer.renderStackSize(this.fontRenderer, gui.tile.config.items[s.slotNumber], s.xPos, s.yPos);
+            IAEItemStack item = gui.tile.config.items[s.slotNumber];
+
+            if (isShiftKeyDown() && item.isCraftable())
+                RenderUtil.renderStackSize(fontRenderer, item, s.xPos, s.yPos, "Start");
+            else
+                stackSizeRenderer.renderStackSize(this.fontRenderer, item, s.xPos, s.yPos);
             ci.cancel();
         }
     }
