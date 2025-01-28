@@ -1,11 +1,16 @@
 package com.goat.goatae2.network.packet;
 
+import appeng.api.networking.IGrid;
+import appeng.api.networking.crafting.ICraftingGrid;
+import appeng.api.networking.crafting.ICraftingJob;
+import appeng.api.networking.security.IActionHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
-import appeng.container.implementations.ContainerCraftAmount;
+import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.core.AppEng;
 import appeng.core.sync.GuiBridge;
+import appeng.me.helpers.PlayerSource;
 import appeng.util.item.AEItemStack;
 import com.goat.goatae2.GOATAE2;
 import com.goat.goatae2.Utility;
@@ -20,13 +25,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 public class OpenCraftingGUI extends AbstractPacket {
     public static final String packetName = "OpenCraftingGUI";
     private Type type;
 
     public static enum Type {
-        LEVEL_MAINTAINER, CRAFTING_STATUS, CRAFTING_AMOUNT, CRAFTING_CONFIRM
+        LEVEL_MAINTAINER, CRAFTING_STATUS, CRAFTING_CONFIRM
     }
 
     public OpenCraftingGUI() {
@@ -68,25 +74,35 @@ public class OpenCraftingGUI extends AbstractPacket {
             }
         } else if (type == Type.CRAFTING_STATUS) {
             openGui(GuiBridge.GUI_CRAFTING_STATUS, p, ((ContainerLevelMaintainer) p.openContainer).getTile().getPos());
-        } else if (type == Type.CRAFTING_AMOUNT) {
+        } else if (type == Type.CRAFTING_CONFIRM) {
             AEBaseContainer baseContainer = (AEBaseContainer) p.openContainer;
             ContainerOpenContext context = baseContainer.getOpenContext();
             if (context != null) {
                 TileLevelMaintainer tile = (TileLevelMaintainer) context.getTile();
+                int slotId = data.getInteger("slotId");
+                tile.tempClickedSlot = slotId;
+                
                 IAEItemStack target = Utility.getCorrectCraftingItem(AEItemStack.fromNBT(data));
-                tile.tempClickedSlot = data.getInteger("slotId");
+                target.setStackSize(tile.config.batchSizes[slotId]);
 
+                IGrid g = ((IActionHost) tile).getActionableNode().getGrid();
+                if (g == null || target == null) {
+                    return;
+                }
+                
+                try {
+                    ICraftingGrid cg = tile.getProxy().getCrafting();
+                    Future<ICraftingJob> futureJob = cg.beginCraftingJob(tile.getWorld(), g, new PlayerSource(p, tile), target, null);
 
-                openGui(GuiBridge.GUI_CRAFTING_AMOUNT, p, tile.getPos());
-                if (p.openContainer instanceof ContainerCraftAmount) {
-                    ContainerCraftAmount cca = (ContainerCraftAmount) p.openContainer;
-                    if (target != null) {
-                        target.getDefinition().setCount(1);
-                        cca.getCraftingItem().putStack(target.asItemStackRepresentation());
-                        cca.setItemToCraft(target);
+                    openGui(GuiBridge.GUI_CRAFTING_CONFIRM, p, tile.getPos());
+                    if (p.openContainer instanceof ContainerCraftConfirm) {
+                        ContainerCraftConfirm ccc = (ContainerCraftConfirm) p.openContainer;
+                        boolean heldShift = data.getBoolean("shiftDown");
+                        ccc.setAutoStart(heldShift);
+                        ccc.setJob(futureJob);
                     }
+                } catch (Throwable var14) {
 
-                    cca.detectAndSendChanges();
                 }
             }
         }

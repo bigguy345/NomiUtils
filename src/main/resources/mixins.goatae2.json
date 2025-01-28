@@ -5,7 +5,6 @@
   "minVersion": "0.8.5",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "common.ae2.container.MixinContainerCraftAmount",
     "common.ae2.container.MixinContainerCraftConfirm",
     "common.ae2.container.MixinContainerCraftingStatus",
     "common.ae2.crafting.MixinCraftBranchFailure",
@@ -15,7 +14,6 @@
   ],
   "client": [
     "client.ae2.gui.MixinAEBaseGui",
-    "client.ae2.gui.MixinGuiCraftAmount",
     "client.ae2.gui.MixinGuiCraftConfirm",
     "client.ae2.gui.MixinGuiCraftingStatus"
   ],

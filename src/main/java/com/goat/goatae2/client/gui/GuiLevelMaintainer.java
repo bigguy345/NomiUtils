@@ -215,7 +215,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
         }
 
         boolean isZero = false;
-        boolean inStock = cont.getTile().config.inSystemStock[slot.slotNumber];
+        boolean inStock = tile.config.inSystemStock[slot.slotNumber];
         if (!inStock)
             isZero = true;
 
@@ -224,7 +224,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
         else
             super.drawSlot(slot);
 
-        boolean craftFailed = cont.getTile().config.craftFailed[slot.slotNumber];
+        boolean craftFailed = tile.config.craftFailed[slot.slotNumber];
         boolean selected = slot.equals(selectedSlot);
         if (craftFailed || selected) { //draw outline
             int x = slot.xPos, y = slot.yPos;
@@ -253,7 +253,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             GlStateManager.enableTexture2D();
         }
 
-        boolean isCrafting = cont.getTile().config.isCrafting[slot.slotNumber];
+        boolean isCrafting = tile.config.isCrafting[slot.slotNumber];
         if (isCrafting) { //draw isCrafting/failed circle
             mc.getTextureManager().bindTexture(LEVEL_MAINTAINER);
             GlStateManager.disableDepth();
@@ -333,7 +333,8 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
                     NBTTagCompound compound = new NBTTagCompound();
                     tile.config.items[id].writeToNBT(compound);
                     compound.setInteger("slotId", tile.tempClickedSlot = id);
-                    PacketHandler.Instance.sendToServer(new OpenCraftingGUI(OpenCraftingGUI.Type.CRAFTING_AMOUNT, compound));
+                    compound.setBoolean("shiftDown", isShiftKeyDown());
+                    PacketHandler.Instance.sendToServer(new OpenCraftingGUI(OpenCraftingGUI.Type.CRAFTING_CONFIRM, compound));
                 }
                 return;
             }
@@ -430,12 +431,12 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             setEnabled(threshold, on);
             setEnabled(batchSize, on);
         } else if (type == SyncMaintainerGUIPacket.Type.CLEAR_SLOT) {
-            ItemMaintainerInventory inv = cont.getTile().config;
+            ItemMaintainerInventory inv = tile.config;
             inv.thresholds[id] = inv.batchSizes[id] = 0;
             inv.inSystemStock[id] = inv.isCraftable[id] = inv.isCrafting[id] = inv.craftFailed[id] = false;
             inv.failReason[id] = null;
         } else if (type == SyncMaintainerGUIPacket.Type.CLEAR_ALL_SLOTS) {
-            ItemMaintainerInventory inv = cont.getTile().config;
+            ItemMaintainerInventory inv = tile.config;
             for (int x = 0; x < inv.size; ++x) {
                 inv.thresholds[x] = inv.batchSizes[x] = 0;
                 inv.inSystemStock[x] = inv.isCraftable[id] = inv.isCrafting[x] = inv.craftFailed[x] = false;
@@ -450,8 +451,8 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
             box.setFocused(false);
             box.setText("");
         } else if (selectedSlot != null) {
-            threshold.setText(cont.getTile().config.thresholds[selectedSlot.slotNumber] + "");
-            batchSize.setText(cont.getTile().config.batchSizes[selectedSlot.slotNumber] + "");
+            threshold.setText(tile.config.thresholds[selectedSlot.slotNumber] + "");
+            batchSize.setText(tile.config.batchSizes[selectedSlot.slotNumber] + "");
         }
 
 
@@ -487,7 +488,7 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
         batchSize.drawTextBox();
 
         if (this.fuzzyMode != null) {
-            this.fuzzyMode.setVisibility(cont.getTile().getInstalledUpgrades(Upgrades.FUZZY) > 0);
+            this.fuzzyMode.setVisibility(tile.getInstalledUpgrades(Upgrades.FUZZY) > 0);
         }
     }
 
