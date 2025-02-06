@@ -141,11 +141,14 @@ public class ItemMaintainerInventory implements IItemHandlerModifiable {
     }
 
     public void setStackInSlot(int slot, ItemStack newItemStack) {
+        if (slot >= size)
+            return;
+        
         IAEItemStack item = AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createStack(newItemStack);
         items[slot] = item;
         if (item != null && !item.getDefinition().isEmpty())
             item.setCraftable(isCraftable[slot]);
-        
+
         if (Platform.isServer() && item != null && !item.getDefinition().isEmpty()) {
             long stockNumber = getSystemStackSize(slot, item, owner.getProxy().isActive());
             item.setStackSize(stockNumber == 0 ? 1 : stockNumber);

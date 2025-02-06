@@ -60,28 +60,38 @@ import java.util.*;
 public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredients {
 
     protected final Map<IGhostIngredientHandler.Target<?>, Object> mapTargetSlot = new HashMap<>();
-    private final ContainerLevelMaintainer cont;
+    protected ContainerLevelMaintainer cont;
     public TileLevelMaintainer tile;
-    private static Slot selectedSlot;
-    private GuiTabButton craftingStatus;
-    private GuiImgButton clear, fuzzyMode;
-    private GuiImgButtonGAE2 run;
+    protected static Slot selectedSlot;
+    protected GuiTabButton craftingStatus;
+    protected GuiImgButton clear, fuzzyMode;
+    protected GuiImgButtonGAE2 run;
 
-    private GuiNumberBox threshold, batchSize;
-    private boolean thresholdEnabled, batchEnabled;
+    protected GuiNumberBox threshold, batchSize;
+    protected boolean thresholdEnabled, batchEnabled;
 
-    public GuiLevelMaintainer(InventoryPlayer ipl, TileLevelMaintainer tile) {
-        super(new ContainerLevelMaintainer(ipl, tile));
+    protected boolean fluidOnly;
+
+    public GuiLevelMaintainer(InventoryPlayer ipl, TileLevelMaintainer tile, boolean fluid) {
+        this(new ContainerLevelMaintainer(ipl, tile, fluid));
         this.cont = (ContainerLevelMaintainer) inventorySlots;
         this.tile = tile;
         this.xSize = 246;
-        this.ySize = 251;
+        this.ySize = 197;
+        fluidOnly = fluid;
 
         for (int x = 0; x < tile.config.size; ++x) {
             if (tile.config.items[x] != null) {
                 tile.config.items[x].setCraftable(tile.config.isCraftable[x]);
             }
         }
+    }
+
+    public GuiLevelMaintainer(ContainerLevelMaintainer containerLevelMaintainer) {
+        super(containerLevelMaintainer);
+
+        if (selectedSlot != null && (selectedSlot.slotNumber >= containerLevelMaintainer.tile.size || selectedSlot.getStack() != null))
+            selectedSlot = null;
     }
 
     @Override
@@ -92,7 +102,10 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
 
         this.buttonList.add(this.run = new GuiImgButtonGAE2(this.guiLeft - 18, y, 0).setText("Run", "Runs crafting cycle"));
         this.buttonList.add(this.clear = new GuiImgButton(this.guiLeft - 18, y += 20, Settings.ACTIONS, ActionItems.CLOSE));
-        this.buttonList.add(this.fuzzyMode = new GuiImgButton(this.guiLeft - 18, y += 20, Settings.FUZZY_MODE, FuzzyMode.IGNORE_ALL));
+        if (!fluidOnly) {
+            this.buttonList.add(this.fuzzyMode = new GuiImgButton(this.guiLeft - 18, y += 20, Settings.FUZZY_MODE, FuzzyMode.IGNORE_ALL));
+            this.fuzzyMode.setVisibility(tile.getInstalledUpgrades(Upgrades.FUZZY) > 0);
+        }
 
 
         this.threshold = new GuiNumberBox(this.fontRenderer, this.guiLeft + 184, this.guiTop + 80, 62, this.fontRenderer.FONT_HEIGHT, Long.class);
@@ -467,14 +480,15 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
 
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
-        fontRenderer.drawString("Level Maintainer", 8, 6, 0x404040);
-        fontRenderer.drawString("Items", 8, 18, 0x404040);
-        fontRenderer.drawString("Fluids", 8, ySize - 143, 0x404040);
-        fontRenderer.drawString("To Craft", 183, ySize - 210, 0x404040);
-        fontRenderer.drawString("When Under", 183, ySize - 182, 0x404040);
-        fontRenderer.drawString(GuiText.inventory.getLocal(), 8, ySize - 94, 0x404040);
+        fontRenderer.drawString(localize(fluidOnly ? "fluid_level_maintainer" : "level_maintainer"), 8, 6, 0x404040);
+        fontRenderer.drawString(localize(fluidOnly ? "maintainer.fluids" : "maintainer.items"), 8, 18, 0x404040);
+        fontRenderer.drawString(localize("maintainer.toCraft"), 183, ySize - 156, 0x404040);
+        fontRenderer.drawString(localize("maintainer.whenUnder"), 183, ySize - 128, 0x404040);
+        fontRenderer.drawString(GuiText.inventory.getLocal(), 8, 107, 0x404040);
+
 
         if (this.fuzzyMode != null) {
+            this.fuzzyMode.setVisibility(tile.getInstalledUpgrades(Upgrades.FUZZY) > 0);
             FuzzyMode fzMode = cont.getFuzzyMode();
             this.fuzzyMode.set(fzMode);
         }
@@ -485,14 +499,14 @@ public class GuiLevelMaintainer extends AEBaseGui implements IJEIGhostIngredient
     @Override
     public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
         mc.getTextureManager().bindTexture(LEVEL_MAINTAINER);
-        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, 256, this.ySize);
+        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, 256, 201);
+
+        if (fuzzyMode != null) {
+            this.drawTexturedModalRect(offsetX + 180, offsetY + 1, 256 - 32, 256 - 48, 32, 32);
+        }
 
         threshold.drawTextBox();
         batchSize.drawTextBox();
-
-        if (this.fuzzyMode != null) {
-            this.fuzzyMode.setVisibility(tile.getInstalledUpgrades(Upgrades.FUZZY) > 0);
-        }
     }
 
     @Override

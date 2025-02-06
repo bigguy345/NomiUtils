@@ -11,7 +11,6 @@ import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.CraftingCPURecord;
 import com.goat.goatae2.GOATAE2;
-import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.tile.IMultiCraftingTracker;
 import com.goat.goatae2.tile.TileLevelMaintainer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -73,7 +72,7 @@ public abstract class MixinContainerCraftConfirm extends AEBaseContainer {
     @Shadow
     public abstract World getWorld();
 
-    @Inject(method = "startJob", at = @At("HEAD"),cancellable = true)
+    @Inject(method = "startJob", at = @At("HEAD"), cancellable = true)
     public void onStartJob(CallbackInfo ci) {
         if (getTarget() instanceof TileLevelMaintainer) {
             TileLevelMaintainer tile = (TileLevelMaintainer) getTarget();
@@ -95,7 +94,7 @@ public abstract class MixinContainerCraftConfirm extends AEBaseContainer {
 
                     BlockPos pos = tile.getPos();
                     EntityPlayer p = getInventoryPlayer().player;
-                    p.openGui(GOATAE2.INSTANCE, GuiTypes.LEVEL_MAINTAINER_ID, p.getEntityWorld(), pos.getX(), pos.getY(), pos.getZ());
+                    p.openGui(GOATAE2.INSTANCE, tile.getGuiId(), p.getEntityWorld(), pos.getX(), pos.getY(), pos.getZ());
                 }
             }
             ci.cancel();

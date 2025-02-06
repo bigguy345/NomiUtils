@@ -25,8 +25,12 @@ public class BlockLevelMaintainer extends AEBaseTileBlock {
 
     public static final PropertyDirection facingProperty = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
+    public BlockLevelMaintainer(Material mat) {
+        super(mat);
+    }
+
     public BlockLevelMaintainer() {
-        super(Material.IRON);
+        this(Material.IRON);
         setTileEntity(TileLevelMaintainer.class);
     }
 
@@ -39,12 +43,16 @@ public class BlockLevelMaintainer extends AEBaseTileBlock {
         if (tile != null) {
             if (!world.isRemote) {
                 tile.markForUpdate();
-                player.openGui(GOATAE2.INSTANCE, GuiTypes.LEVEL_MAINTAINER_ID, world, pos.getX(), pos.getY(), pos.getZ());
+                player.openGui(GOATAE2.INSTANCE, getGuiId(), world, pos.getX(), pos.getY(), pos.getZ());
             }
             return true;
         }
 
         return super.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
+    }
+
+    public int getGuiId() {
+        return GuiTypes.LEVEL_MAINTAINER_ID;
     }
 
     @Override

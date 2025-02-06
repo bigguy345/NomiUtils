@@ -23,42 +23,53 @@ import net.minecraftforge.items.IItemHandler;
 
 public class ContainerLevelMaintainer extends AEBaseContainer implements IOptionalSlotHost {
 
-    private final TileLevelMaintainer tile;
+    public final TileLevelMaintainer tile;
     @GuiSync(1)
     public FuzzyMode fzMode = FuzzyMode.IGNORE_ALL;
+    @GuiSync(2)
+    public boolean onlyFluid;
 
-    public ContainerLevelMaintainer(InventoryPlayer ip, TileLevelMaintainer tile) {
+  
+
+    public ContainerLevelMaintainer(InventoryPlayer ip, TileLevelMaintainer tile, boolean onlyFluid) {
         super(ip, tile);
         this.tile = tile;
+        this.onlyFluid = onlyFluid;
         tile.addListener(ip.player);
 
+        initSlots(ip);
 
+        if (!onlyFluid) {
+            final IItemHandler upgrades = tile.getInventoryByName("upgrades");
+            this.addSlotToContainer((new SlotRestrictedInput(SlotRestrictedInput.PlacableItemType.UPGRADES, upgrades, 0, 188, 9, this.getInventoryPlayer()) {
+                public void putStack(ItemStack stack) {
+                    super.putStack(stack);
+                    if (Platform.isServer()) {
+                        tile.config.updateSystemStackSizes();
+                        getContainer().detectAndSendChanges();
+                    }
+                }
+            }).setNotDraggable());
+        }
+
+        if (Platform.isServer())
+            tile.config.updateSystemStackSizes();
+    }
+
+    public void initSlots(InventoryPlayer ip) {
         IItemHandler inv = tile.getInventoryHandler();
         final int xo = 8;
         final int yo = 23 + 6;
 
-        for (int y = 0; y < 7; y++) {
-            for (int x = 0; x < 9; x++) {
-                if (y < 4) {
-                    this.addSlotToContainer(new SlotFake(inv, y * 9 + x, xo + x * 18, yo + y * 18));
-                } else if (y > 4 && y < 7) {
-                    this.addSlotToContainer(new FluidSlot(inv, (y - 1) * 9 + x, xo + x * 18, yo + y * 18));
-                }
+        for (int y = 0; y < tile.columns; y++) {
+            for (int x = 0; x < tile.rows; x++) {
+                if (onlyFluid)
+                    this.addSlotToContainer(new FluidSlot(inv, y * tile.rows + x, xo + x * 18, yo + y * 18));
+                else
+                    this.addSlotToContainer(new SlotFake(inv, y * tile.rows + x, xo + x * 18, yo + y * 18));
             }
         }
-        final IItemHandler upgrades = tile.getInventoryByName("upgrades");
-        this.addSlotToContainer((new SlotRestrictedInput(SlotRestrictedInput.PlacableItemType.UPGRADES, upgrades, 0, 188, 9, this.getInventoryPlayer()) {
-            public void putStack(ItemStack stack) {
-                super.putStack(stack);
-                if (Platform.isServer()) {
-                    tile.config.updateSystemStackSizes();
-                    getContainer().detectAndSendChanges();
-                }
-            }
-        }).setNotDraggable());
-
-        tile.config.updateSystemStackSizes();
-        this.bindPlayerInventory(ip, 0, 169);
+        this.bindPlayerInventory(ip, 0, 119);
     }
 
     public TileLevelMaintainer getTile() {
@@ -131,6 +142,14 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
         this.fzMode = fzMode;
     }
 
+    public boolean isOnlyFluid() {
+        return onlyFluid;
+    }
+
+    public void setOnlyFluid(boolean onlyFluid) {
+        this.onlyFluid = onlyFluid;
+    }
+
     @Override
     public boolean isSlotEnabled(int i) {
         return true;
@@ -139,7 +158,6 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
     @Override
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
-        //        tile.doCraftCycle();
         tile.removeListener(player);
     }
 }

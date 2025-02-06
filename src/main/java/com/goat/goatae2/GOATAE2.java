@@ -32,6 +32,7 @@ public class GOATAE2 {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent preinit) {
+        AE2FC_LOADED = Platform.isModLoaded("ae2fc");
         MinecraftForge.EVENT_BUS.register(this);
         proxy.preInit(preinit);
     }
@@ -45,7 +46,6 @@ public class GOATAE2 {
     public void onPostInit(FMLPostInitializationEvent event) {
         proxy.postInit(event);
         
-        AE2FC_LOADED = Platform.isModLoaded("ae2fc");
         PacketHandler.Instance = new PacketHandler();
 
     }

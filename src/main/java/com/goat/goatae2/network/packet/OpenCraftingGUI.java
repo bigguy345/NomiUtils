@@ -14,7 +14,6 @@ import appeng.me.helpers.PlayerSource;
 import appeng.util.item.AEItemStack;
 import com.goat.goatae2.GOATAE2;
 import com.goat.goatae2.Utility;
-import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.container.ContainerLevelMaintainer;
 import com.goat.goatae2.network.AbstractPacket;
 import com.goat.goatae2.tile.TileLevelMaintainer;
@@ -68,9 +67,10 @@ public class OpenCraftingGUI extends AbstractPacket {
         if (type == Type.LEVEL_MAINTAINER) {
             Object target = ((AEBaseContainer) p.openContainer).getTarget();
             if (target instanceof TileLevelMaintainer) {
-                TileLevelMaintainer tile = (TileLevelMaintainer) target;
+                TileLevelMaintainer tile = (TileLevelMaintainer) ((AEBaseContainer) p.openContainer).getTarget();
                 BlockPos pos = tile.getPos();
-                p.openGui(GOATAE2.INSTANCE, GuiTypes.LEVEL_MAINTAINER_ID, p.getEntityWorld(), pos.getX(), pos.getY(), pos.getZ());
+
+                p.openGui(GOATAE2.INSTANCE, tile.getGuiId(), p.getEntityWorld(), pos.getX(), pos.getY(), pos.getZ());
             }
         } else if (type == Type.CRAFTING_STATUS) {
             openGui(GuiBridge.GUI_CRAFTING_STATUS, p, ((ContainerLevelMaintainer) p.openContainer).getTile().getPos());
@@ -81,7 +81,7 @@ public class OpenCraftingGUI extends AbstractPacket {
                 TileLevelMaintainer tile = (TileLevelMaintainer) context.getTile();
                 int slotId = data.getInteger("slotId");
                 tile.tempClickedSlot = slotId;
-                
+
                 IAEItemStack target = Utility.getCorrectCraftingItem(AEItemStack.fromNBT(data));
                 target.setStackSize(tile.config.batchSizes[slotId]);
 
@@ -89,7 +89,7 @@ public class OpenCraftingGUI extends AbstractPacket {
                 if (g == null || target == null) {
                     return;
                 }
-                
+
                 try {
                     ICraftingGrid cg = tile.getProxy().getCrafting();
                     Future<ICraftingJob> futureJob = cg.beginCraftingJob(tile.getWorld(), g, new PlayerSource(p, tile), target, null);

@@ -30,6 +30,8 @@ import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
 import appeng.util.item.AEItemStack;
 import com.goat.goatae2.Utility;
+import com.goat.goatae2.block.Blocks;
+import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.util.DummyAdaptor;
 import com.google.common.collect.ImmutableSet;
 import io.netty.buffer.ByteBuf;
@@ -50,12 +52,13 @@ import static com.goat.goatae2.GOATAE2.AE2FC_LOADED;
 
 public class TileLevelMaintainer extends AENetworkTile implements ICraftingRequester, ITickable, ITerminalHost, IConfigManagerHost, IUpgradeableHost, IAEAppEngInventory {
 
+    public int rows, columns, size;
     public int tick;
-    public final ItemMaintainerInventory config = new ItemMaintainerInventory(this, 9 * 6);
+    public ItemMaintainerInventory config;
     public final IActionSource source;
 
-    public final MultiCraftingTracker craftingTracker = new MultiCraftingTracker(this, config.size);
-    public final UpgradeInventory upgrades;
+    public MultiCraftingTracker craftingTracker;
+    public UpgradeInventory upgrades;
 
     protected int getUpgradeSlots() {
         return 1;
@@ -64,7 +67,7 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
     public final List<EntityPlayer> playersMonitored = new ArrayList<>();
 
     public boolean isOpened;
-    private final IConfigManager manager;
+    protected IConfigManager manager;
 
     public int tempClickedSlot = -1; //temporarily saves GuiLevelMaintainer selected slot for GuiCraftConfirm
 
@@ -80,11 +83,17 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
     @Reflected
     public TileLevelMaintainer() {
+        super();
         getProxy().setIdlePowerUsage(2D);
         getProxy().setFlags(GridFlags.REQUIRE_CHANNEL);
+
+        init();
+
+        config = new ItemMaintainerInventory(this, size = rows * columns);
+        craftingTracker = new MultiCraftingTracker(this, size);
+
         this.source = new MachineSource(this);
         this.manager = new ConfigManager(this);
-
         this.manager.registerSetting(Settings.FUZZY_MODE, FuzzyMode.IGNORE_ALL);
         this.manager.registerSetting(Settings.REDSTONE_CONTROLLED, RedstoneMode.IGNORE);
         this.upgrades = new UpgradeInventory(this, this.getUpgradeSlots()) {
@@ -93,6 +102,11 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
                 return upgrades == Upgrades.FUZZY ? 1 : 0;
             }
         };
+    }
+
+    protected void init() {
+        rows = 9;
+        columns = 4;
     }
 
     public <T extends IAEStack<T>> boolean canInsert(IMEMonitor<T> monitor, T stack) {
@@ -333,6 +347,14 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
     public void onChangeInventory(IItemHandler inv, int i, InvOperation invOperation, ItemStack itemStack, ItemStack itemStack1) {
         if (inv == this.upgrades) {
         }
+    }
+
+    public ItemStack getIcon() {
+        return new ItemStack(Blocks.LEVEL_MAINTAINER);
+    }
+
+    public int getGuiId() {
+        return GuiTypes.LEVEL_MAINTAINER_ID;
     }
 }
     

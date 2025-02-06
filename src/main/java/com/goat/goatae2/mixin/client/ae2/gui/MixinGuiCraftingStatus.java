@@ -3,7 +3,6 @@ package com.goat.goatae2.mixin.client.ae2.gui;
 import appeng.client.gui.implementations.GuiCraftingStatus;
 import appeng.client.gui.widgets.GuiTabButton;
 import appeng.container.implementations.ContainerCraftingStatus;
-import com.goat.goatae2.block.Blocks;
 import com.goat.goatae2.network.PacketHandler;
 import com.goat.goatae2.network.packet.OpenCraftingGUI;
 import com.goat.goatae2.tile.TileLevelMaintainer;
@@ -32,7 +31,7 @@ public class MixinGuiCraftingStatus {
     public void init(CallbackInfo ci) {
         Object target = this.status.getTarget();
         if (target instanceof TileLevelMaintainer) {
-            this.myIcon = new ItemStack(Blocks.LEVEL_MAINTAINER);
+            this.myIcon = ((TileLevelMaintainer) target).getIcon();
         }
     }
 

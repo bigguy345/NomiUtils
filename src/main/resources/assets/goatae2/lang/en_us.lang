@@ -7,6 +7,9 @@ tile.goatae2:fluid_level_maintainer.name=ME Fluid Level Maintainer
 goatae2.gui.level_maintainer=ME Level Maintainer
 
 
+level_maintainer=ME Level Maintainer
+fluid_level_maintainer=ME Fluid Level Maintainer
+dual_level_maintainer=ME Dual Level Maintainer
 
 
 #Level maintainer GUI
@@ -15,6 +18,10 @@ maintainer.isCrafting=Crafting
 maintainer.craftFailed=Failed
 maintainer.failReason.missingIngredients=Missing ingredients
 maintainer.failReason.invalidPattern=Invalid pattern
+maintainer.fluids=Fluids
+maintainer.items=Items
+maintainer.toCraft=To Craft
+maintainer.whenUnder=When Under
 
 
 
