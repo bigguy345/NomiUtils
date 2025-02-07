@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all":  "goatae2:blocks/fluid_level_maintainer"
+    }
+}

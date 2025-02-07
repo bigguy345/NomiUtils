@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "online=true": {
+      "model": "goatae2:level_maintainer_on"
+    },
+    "online=false": {
+      "model": "goatae2:level_maintainer"
+    },
+    "inventory": {"model": "goatae2:level_maintainer"}
+  }
+}

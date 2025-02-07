@@ -1,12 +1,14 @@
 package com.goat.goatae2.tile;
 
 import appeng.api.config.*;
+import appeng.api.implementations.IPowerChannelState;
 import appeng.api.implementations.IUpgradeableHost;
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.crafting.ICraftingRequester;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.events.MENetworkEventSubscribe;
+import appeng.api.networking.events.MENetworkPowerStatusChange;
 import appeng.api.networking.events.MENetworkStorageEvent;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageGrid;
@@ -30,14 +32,18 @@ import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
 import appeng.util.item.AEItemStack;
 import com.goat.goatae2.Utility;
+import com.goat.goatae2.block.BlockLevelMaintainer;
 import com.goat.goatae2.block.Blocks;
 import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.util.DummyAdaptor;
 import com.google.common.collect.ImmutableSet;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.UniversalBucket;
@@ -50,7 +56,7 @@ import java.util.List;
 
 import static com.goat.goatae2.GOATAE2.AE2FC_LOADED;
 
-public class TileLevelMaintainer extends AENetworkTile implements ICraftingRequester, ITickable, ITerminalHost, IConfigManagerHost, IUpgradeableHost, IAEAppEngInventory {
+public class TileLevelMaintainer extends AENetworkTile implements IPowerChannelState, ICraftingRequester, ITickable, ITerminalHost, IConfigManagerHost, IUpgradeableHost, IAEAppEngInventory {
 
     public int rows, columns, size;
     public int tick;
@@ -66,7 +72,8 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
     public final List<EntityPlayer> playersMonitored = new ArrayList<>();
 
-    public boolean isOpened;
+    public boolean isOpened, isPowered = false;
+    ;
     protected IConfigManager manager;
 
     public int tempClickedSlot = -1; //temporarily saves GuiLevelMaintainer selected slot for GuiCraftConfirm
@@ -80,6 +87,7 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
         playersMonitored.remove(player);
         isOpened = !playersMonitored.isEmpty();
     }
+
 
     @Reflected
     public TileLevelMaintainer() {
@@ -162,15 +170,18 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
 
     @Override
     protected boolean readFromStream(ByteBuf data) throws IOException {
+        boolean hadPower = this.isPowered();
         boolean changed = super.readFromStream(data);
+        this.isPowered = data.readBoolean();
         changed = config.readFromStream(data, changed);
         //  facing = EnumFacing.byHorizontalIndex(data.readInt());
-        return changed;
+        return this.isPowered() != hadPower || changed;
     }
 
     @Override
     protected void writeToStream(ByteBuf data) throws IOException {
         super.writeToStream(data);
+        data.writeBoolean(isPowered);
         config.writeToStream(data);
 
         //        if (facing != null) 
@@ -304,10 +315,42 @@ public class TileLevelMaintainer extends AENetworkTile implements ICraftingReque
     public void update() {
         if (!getWorld().isRemote) {
 
-            // if (tick % (20 * 2) == 0 && !isOpened)
-            //  doCraftCycle();
+            if (tick % (20 * 2) == 0 && !isOpened) {
+                doCraftCycle();
+                this.markDirty();
+            }
             tick++;
         }
+    }
+
+    private void updatePowerState() {
+
+        try {
+            this.isPowered = this.getProxy().getEnergy().isNetworkPowered();
+        } catch (GridAccessException e) {
+        }
+
+        final IBlockState current = this.world.getBlockState(this.pos);
+        if (current.getBlock() instanceof BlockLevelMaintainer) {
+            IBlockState newState = current.withProperty(BlockLevelMaintainer.ONLINE, isPowered);
+            if (current != newState)
+                world.setBlockState(pos, newState, 2);
+        }
+    }
+
+    @MENetworkEventSubscribe
+    public void onPowerEvent(final MENetworkPowerStatusChange p) {
+        this.updatePowerState();
+    }
+
+    @Override
+    public boolean isPowered() {
+        return this.isPowered;
+    }
+
+    @Override
+    public boolean isActive() {
+        return this.isPowered;
     }
 
     @Override

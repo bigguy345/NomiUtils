@@ -1,9 +1,15 @@
 #PARSE_ESCAPES
 
+itemGroup.goatae2=Goat's AE2 Addon
+
 # Meta
 #itemGroup.goatae2=Goat AE2
 tile.goatae2:level_maintainer.name=ME Level Maintainer
-tile.goatae2:fluid_level_maintainer.name=ME Fluid Level Maintainer
+tile.goatae2.level_maintainer.name=ME Level Maintainer
+tile.goatae2.fluid_level_maintainer.name=ME Fluid Level Maintainer
+tile.goatae2.dual_level_maintainer.name=ME Dual Level Maintainer
+
+goatae2:level_maintainer=ME Level Maintainer
 goatae2.gui.level_maintainer=ME Level Maintainer
 
 

@@ -6,8 +6,7 @@ import com.goat.goatae2.constants.GuiTypes;
 import com.goat.goatae2.tile.TileLevelMaintainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,20 +17,25 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.property.ExtendedBlockState;
-import net.minecraftforge.common.property.IUnlistedProperty;
 
 public class BlockLevelMaintainer extends AEBaseTileBlock {
 
-    public static final PropertyDirection facingProperty = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
+    //  public static final PropertyDirection facingProperty = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
+    public static PropertyBool ONLINE = PropertyBool.create("online");
 
     public BlockLevelMaintainer(Material mat) {
         super(mat);
+        this.setDefaultState(getDefaultState().withProperty(ONLINE, Boolean.valueOf(false)));
     }
 
     public BlockLevelMaintainer() {
         this(Material.IRON);
         setTileEntity(TileLevelMaintainer.class);
+    }
+
+    @Override
+    protected IProperty[] getAEStates() {
+        return new IProperty[]{ONLINE};
     }
 
     @Override
@@ -56,20 +60,10 @@ public class BlockLevelMaintainer extends AEBaseTileBlock {
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[]{facingProperty}, new IUnlistedProperty[]{});
-    }
-
-    @Override
     public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
-        TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if (tileEntity instanceof TileLevelMaintainer) {
-            //            if (((TileFluidLevelMaintainer) tileEntity).facing != null)
-            //            {
-            //                return state.withProperty(facingProperty,((TileFluidLevelMaintainer) tileEntity).facing);
-            //            }
-        }
-        return state;
+        TileLevelMaintainer te = this.getTileEntity(worldIn, pos);
+        boolean powered = te != null && te.isActive();
+        return super.getActualState(state, worldIn, pos).withProperty(ONLINE, powered);
     }
 
     @Override
