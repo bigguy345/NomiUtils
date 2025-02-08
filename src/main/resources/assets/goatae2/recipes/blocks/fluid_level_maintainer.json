@@ -1,0 +1,32 @@
+{
+  "type": "forge:ore_shaped",
+  "result": {
+    "item": "goatae2:fluid_level_maintainer"
+  },
+  "pattern": [
+    "aba",
+    "cde",
+    "aba"
+  ],
+  "key": {
+    "a": {
+      "type": "forge:ore_dict",
+      "ore": "dyeBlue"
+    },
+    "b": {
+      "type": "appliedenergistics2:part",
+      "part": "part.level_emitter"
+    },
+    "c": {
+      "type": "appliedenergistics2:part",
+      "part": "part.fluid_storage_bus"
+    },
+    "d": {
+      "item": "appliedenergistics2:crafting_monitor"
+    },
+    "e": {
+      "type": "appliedenergistics2:part",
+      "part": "cable_glass.fluix"
+    }
+  }
+}

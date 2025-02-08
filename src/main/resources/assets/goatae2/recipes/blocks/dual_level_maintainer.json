@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "goatae2:level_maintainer"
+    },
+    {
+      "item": "goatae2:fluid_level_maintainer"
+    }
+  ],
+  "result": {
+    "item": "goatae2:dual_level_maintainer"
+  }
+}
