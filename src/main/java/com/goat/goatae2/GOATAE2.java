@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = GOATAE2.MODID, name = GOATAE2.NAME, version = GOATAE2.VERSION)
+@Mod(modid = GOATAE2.MODID, name = GOATAE2.NAME, version = GOATAE2.VERSION, dependencies = "required-after:appliedenergistics2")
 public class GOATAE2 {
     public static final String MODID = "goatae2";
     public static final String NAME = "goat's ae2";
@@ -45,9 +45,8 @@ public class GOATAE2 {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent event) {
         proxy.postInit(event);
-        
-        PacketHandler.Instance = new PacketHandler();
 
+        PacketHandler.Instance = new PacketHandler();
     }
 
     public static ResourceLocation resource(String path) {
