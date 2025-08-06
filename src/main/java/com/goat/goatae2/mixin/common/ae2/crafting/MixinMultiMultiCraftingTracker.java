@@ -10,7 +10,6 @@ import appeng.helpers.MultiCraftingTracker;
 import appeng.util.InventoryAdaptor;
 import com.goat.goatae2.tile.IMultiCraftingTracker;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,10 +27,6 @@ public abstract class MixinMultiMultiCraftingTracker implements IMultiCraftingTr
     @Shadow
     private Future<ICraftingJob>[] jobs;
 
-    @Final
-    @Shadow
-    private int size;
-
     @Unique
     private HashMap<Integer, ICraftingJob> jobsMap = new HashMap<>();
 
@@ -40,15 +35,6 @@ public abstract class MixinMultiMultiCraftingTracker implements IMultiCraftingTr
 
     public Future<ICraftingJob>[] getJobs() {
         return jobs;
-    }
-
-    @Override
-    public int getJobId(Future<ICraftingJob> job) {
-        for (int i = 0; i < size; i++) {
-            if (jobs[i] == job)
-                return i;
-        }
-        return -1;
     }
 
     @Override
@@ -62,10 +48,6 @@ public abstract class MixinMultiMultiCraftingTracker implements IMultiCraftingTr
     }
 
     @Override
-    public void setJobP(int slot, Future<ICraftingJob> l) {
-        this.setJob(slot, l);
-    }
-    @Override
     public void setLinkP(int slot, ICraftingLink l) {
         this.setLink(slot, l);
     }
@@ -76,13 +58,8 @@ public abstract class MixinMultiMultiCraftingTracker implements IMultiCraftingTr
     }
 
     @Shadow
-    private void setJob(int slot, Future<ICraftingJob> l) {
-
-    }
-
-    @Shadow
     private void setLink(int slot, ICraftingLink l) {
-        
+
     }
 
     @Override
@@ -104,5 +81,4 @@ public abstract class MixinMultiMultiCraftingTracker implements IMultiCraftingTr
             }
         }
     }
-    
 }

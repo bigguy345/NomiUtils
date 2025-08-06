@@ -29,8 +29,6 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
     @GuiSync(2)
     public boolean onlyFluid;
 
-  
-
     public ContainerLevelMaintainer(InventoryPlayer ip, TileLevelMaintainer tile, boolean onlyFluid) {
         super(ip, tile);
         this.tile = tile;
@@ -140,14 +138,6 @@ public class ContainerLevelMaintainer extends AEBaseContainer implements IOption
 
     public void setFuzzyMode(final FuzzyMode fzMode) {
         this.fzMode = fzMode;
-    }
-
-    public boolean isOnlyFluid() {
-        return onlyFluid;
-    }
-
-    public void setOnlyFluid(boolean onlyFluid) {
-        this.onlyFluid = onlyFluid;
     }
 
     @Override
