@@ -38,7 +38,7 @@ public class MixinGuiCraftConfirm extends AEBaseGui {
     private GuiButton cancel;
 
     @Unique
-    private boolean isMaintainer = true;
+    private boolean isMaintainer;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void init(InventoryPlayer inventoryPlayer, ITerminalHost te, CallbackInfo ci) {
