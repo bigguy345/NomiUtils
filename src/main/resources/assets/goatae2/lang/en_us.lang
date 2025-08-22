@@ -30,4 +30,7 @@ maintainer.toCraft=To Craft
 maintainer.whenUnder=When Under
 
 
+goatae2.machine.dual_bus.import.tooltip=Item & Fluid Input for Multiblocks
+goatae2.machine.dual_bus.import.iv.name=IV Dual Input Bus
+
 
