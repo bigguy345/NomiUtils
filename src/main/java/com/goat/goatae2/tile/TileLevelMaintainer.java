@@ -131,17 +131,21 @@ public class TileLevelMaintainer extends AENetworkTile implements IPowerChannelS
                 IAEItemStack item = this.config.items[i];
                 int threshold = config.thresholds[i];
                 int batchSize = config.batchSizes[i];
-                if (item != null && batchSize > 0 && threshold > 0) {
+                if (item != null && batchSize > 0 && threshold > 0 && !config.isCrafting[i]) {
+                   // System.out.println("First Check for " + item);
                     FluidStack fluid = Utility.dummy2fluid(item);
                     if (fluid == null || item.getDefinition().getItem() instanceof UniversalBucket) {
                         IMEMonitor<IAEItemStack> itemMonitor = getItemMonitor();
-                        IAEItemStack inStock = itemMonitor.extractItems(item, Actionable.SIMULATE, this.source);
-                        //   System.out.println(inStock.getStackSize());
-                        if (inStock == null || inStock.getStackSize() < threshold)
-                            if (canInsert(itemMonitor, item.copy().setStackSize(batchSize))) {
-                                this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
-                                this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
-                            }
+                        IAEItemStack inStock = itemMonitor.getStorageList().findPrecise(item);
+                        //itemMonitor.extractItems(item, Actionable.SIMULATE, this.source);
+                        if (inStock != null)
+                            item.setStackSize(inStock.getStackSize());
+
+                        if ((inStock == null || inStock.getStackSize() < threshold) && canInsert(itemMonitor, item.copy().setStackSize(batchSize))) {
+                         //   System.out.println(String.format("Third Check: Crafting Item {%s, threshold=%s, stockSize=%s} ", item, threshold, inStock != null ? inStock.getStackSize() : null));
+                            this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
+                            this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
+                        }
                     } else if (AE2FC_LOADED) {
                         craftFluids(item, fluid, i, batchSize, threshold);
                     }
