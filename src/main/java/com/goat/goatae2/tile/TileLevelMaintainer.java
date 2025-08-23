@@ -142,7 +142,7 @@ public class TileLevelMaintainer extends AENetworkTile implements IPowerChannelS
                             item.setStackSize(inStock.getStackSize());
 
                         if ((inStock == null || inStock.getStackSize() < threshold) && canInsert(itemMonitor, item.copy().setStackSize(batchSize))) {
-                         //   System.out.println(String.format("Third Check: Crafting Item {%s, threshold=%s, stockSize=%s} ", item, threshold, inStock != null ? inStock.getStackSize() : null));
+                            System.out.println(String.format("Third Check: Crafting Item {%s, threshold=%s, stockSize=%s} ", item, threshold, inStock != null ? inStock.getStackSize() : null));
                             this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
                             this.craftingTracker.handleCrafting(i, batchSize, item, DummyAdaptor.INSTANCE, getWorld(), getProxy().getGrid(), getProxy().getCrafting(), this.source);
                         }

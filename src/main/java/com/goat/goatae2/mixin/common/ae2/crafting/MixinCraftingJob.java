@@ -71,9 +71,18 @@ public class MixinCraftingJob {
                         tile.config.isCrafting[id] = true;
                         tile.config.craftFailed[id] = false;
                         tile.config.failReason[id] = null;
+
+                        //                        IMEMonitor<IAEItemStack> itemMonitor = tile.getItemMonitor();
+                        //                        IAEItemStack inStock = itemMonitor.extractItems(tile.config.items[id], Actionable.SIMULATE, tile.source);
+                        //                        System.out.println(String.format("Successfully submitted craft Item {%s, threshold=%s, stockSize=%s} ", tile.config.items[id], tile.config.thresholds[id], inStock != null ? inStock.getStackSize() : null));
                     } else if (type.contains("failed")) {
                         tile.config.craftFailed[id] = true;
                         tile.config.failReason[id] = getFailReason(pair.getValue(), e);
+
+                        //                        IMEMonitor<IAEItemStack> itemMonitor = tile.getItemMonitor();
+                        //                        IAEItemStack inStock = itemMonitor.extractItems(tile.config.items[id], Actionable.SIMULATE, tile.source);
+                        //                        System.out.println(String.format("Failed to craft Item {%s, threshold=%s, stockSize=%s} ", tile.config.items[id], tile.config.thresholds[id], inStock != null ? inStock.getStackSize() : null));
+
                     }
                     it.remove(); //success and failed jobs are only removed here
                 }
