@@ -10,7 +10,8 @@
     "common.ae2.crafting.MixinCraftBranchFailure",
     "common.ae2.crafting.MixinCraftingGridCache",
     "common.ae2.crafting.MixinCraftingJob",
-    "common.ae2.crafting.MixinMultiMultiCraftingTracker"
+    "common.ae2.crafting.MixinMultiMultiCraftingTracker",
+    "common.ae2.MixinWirelessTerminal"
   ],
   "client": [
     "client.ae2.gui.MixinAEBaseGui",
