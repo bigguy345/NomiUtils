@@ -9,7 +9,7 @@ import codechicken.lib.raytracer.CuboidRayTraceResult;
 import codechicken.lib.render.CCRenderState;
 import codechicken.lib.render.pipeline.IVertexOperation;
 import codechicken.lib.vec.Matrix4;
-import com.goat.goatae2.GOATAE2;
+import com.goat.goatae2.GregTechTiles;
 import gregtech.api.capability.*;
 import gregtech.api.capability.impl.*;
 import gregtech.api.gui.GuiTextures;
@@ -179,7 +179,7 @@ public class MetaTileEntityDualBus extends MetaTileEntityMultiblockNotifiablePar
         if (this.shouldRenderOverlay()) {
             SimpleOverlayRenderer renderer = this.isExportHatch ? Textures.PIPE_OUT_OVERLAY : Textures.PIPE_IN_OVERLAY;
             renderer.renderSided(this.getFrontFacing(), renderState, translation, pipeline);
-            SimpleOverlayRenderer overlay = this.isExportHatch ? Textures.ITEM_HATCH_OUTPUT_OVERLAY : GOATAE2.DUAL_INPUT_OVERLAY;
+            SimpleOverlayRenderer overlay = this.isExportHatch ? Textures.ITEM_HATCH_OUTPUT_OVERLAY : GregTechTiles.DUAL_INPUT_OVERLAY;
             overlay.renderSided(this.getFrontFacing(), renderState, translation, pipeline);
         }
     }
