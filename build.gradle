@@ -109,6 +109,7 @@ minecraft {
         args << '-Dmixin.hotSwap=true'
         args << '-Dmixin.checks.interfaces=true'
         args << '-Dmixin.debug.export=true'
+       // args << '-javaagent:"C:\\Users\\mazen\\.gradle\\caches\\modules-2\\files-2.1\\zone.rong\\mixinbooter\\10.6\\1e66c1799f30239386e5f2ed8b25ab2d9063cdb3\\mixinbooter-10.6.jar"'
     }
     extraRunJvmArguments.addAll(args)
     extraRunJvmArguments.addAll(propertyStringList('extra_jvm_args'))
@@ -164,6 +165,15 @@ dependencies {
     if (propertyBool('enable_junit_testing')) {
         testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+}
+
+afterEvaluate {
+    def mixinBooter = configurations.runtimeClasspath.find {
+        it.name.startsWith("mixinbooter-${propertyString('mixin_booter_version')}")
+    }
+    if (mixinBooter) {
+        minecraft.extraRunJvmArguments.add("-javaagent:\"${mixinBooter.absolutePath}\"") 
     }
 }
 
